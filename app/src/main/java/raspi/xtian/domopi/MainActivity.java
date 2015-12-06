@@ -5,7 +5,11 @@ import android.app.Activity;
 import android.view.Menu;
 import android.view.View;
 import android.widget.CheckBox;
+import android.widget.Toast;
 import android.widget.ToggleButton;
+
+import com.google.android.gms.wearable.DataMap;
+import com.mariux.teleport.lib.TeleportClient;
 
 import raspi.xtian.domopi.gpio.GPIO;
 import raspi.xtian.domopi.gpio.GPIOStatus;
@@ -15,7 +19,7 @@ import raspi.xtian.domopi.gpio.PORTFUNCTION;
 public class MainActivity extends Activity implements GPIO.PortUpdateListener,GPIO.ConnectionEventListener {
 
     private GPIO gpioPort;
-
+    TeleportClient mTeleportClient;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -57,7 +61,14 @@ public class MainActivity extends Activity implements GPIO.PortUpdateListener,GP
 
         this.gpioPort.addPortUpdateListener(this);
         (new Thread(this.gpioPort)).start();
+
+        mTeleportClient = new TeleportClient(this);
+
+        mTeleportClient.setOnSyncDataItemTask(new VoiceCommandTask());
+
     }
+
+
 
     @Override
          public boolean onCreateOptionsMenu(Menu menu) {
@@ -107,5 +118,12 @@ public class MainActivity extends Activity implements GPIO.PortUpdateListener,GP
         int a = 5;
     }
 
+    public class VoiceCommandTask extends TeleportClient.OnSyncDataItemTask {
 
+        @Override
+        protected void onPostExecute(DataMap result) {
+            String resultado = result.getString("voice");
+            Toast.makeText(getApplicationContext(),resultado,Toast.LENGTH_SHORT).show();
+        }
+    }
 }
